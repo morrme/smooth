@@ -9,11 +9,12 @@ class StorageH2 (Component):
         # Call the init function of the mother class.
         Component.__init__(self)
 
-        """ PARAMETERS """
+        # ------------------- PARAMETERS -------------------
         self.name = 'Storage_default_name'
 
         # Define the hydrogen bus the storage is connected to.
-        self.bus_in_and_out = None
+        self.bus_in = None
+        self.bus_out = None
         # Min. and max. pressure [bar].
         self.p_min = 0
         self.p_max = 450
@@ -25,7 +26,7 @@ class StorageH2 (Component):
         # Life time [a].
         self.life_time = 20
 
-        """ PARAMETERS (VARIABLE ARTIFICIAL COSTS - VAC) """
+        # ------------------- PARAMETERS (VARIABLE ARTIFICIAL COSTS - VAC) -------------------
         # Normal var. art. costs for charging (in) and discharging (out) the storage [EUR/kg].
         self.vac_in = 0
         self.vac_out = 0
@@ -37,10 +38,10 @@ class StorageH2 (Component):
         self.vac_low_in = 0
         self.vac_low_out = 0
 
-        """ UPDATE PARAMETER DEFAULT VALUES """
+        # ------------------- UPDATE PARAMETER DEFAULT VALUES -------------------
         self.set_parameters(params)
 
-        """ CONSTANTS FOR REAL GAS EQUATION """
+        # ------------------- CONSTANTS FOR REAL GAS EQUATION -------------------
         # Critical temperature [K] and pressure [Pa], molar mass of H2
         # [kg/mol], the gas constant [J/(K*mol)].
         self.T_crit = 33.19
@@ -51,20 +52,20 @@ class StorageH2 (Component):
         self.rk_a = 0.1428
         self.rk_b = 1.8208e-5
 
-        """ FURTHER STORAGE VALUES DEPENDANT ON THE PRESSURE AND CAPACITY """
+        # ----- FURTHER STORAGE VALUES DEPENDANT ON THE PRESSURE/CAPACITY -----
         # Calculate the storage volume [m³].
         self.V = self.get_volume(self.p_max, self.storage_capacity)
         # Calculate the mass at p_min, which can't be used [kg].
         self.storage_level_min = self.get_mass(self.p_min)
 
-        """ STATES """
+        # ------------------- STATES -------------------
         # Storage level [kg of h2]
         self.storage_level = min(self.storage_level_init +
                                  self.storage_level_min, self.storage_capacity)
         # Storage pressure [bar].
         self.pressure = self.get_pressure(self.storage_level)
 
-        """ VARIABLE ARTIFICIAL COSTS """
+        # ------------------- VARIABLE ARTIFICIAL COSTS -------------------
         # Store the current artificial costs for input and output [EUR/kg].
         self.current_vac = [0, 0]
 
@@ -84,8 +85,8 @@ class StorageH2 (Component):
     def create_oemof_model(self, busses, _):
         storage = solph.components.GenericStorage(
             label=self.name,
-            outputs={busses[self.bus_in_and_out]: solph.Flow(variable_costs=self.current_vac[1])},
-            inputs={busses[self.bus_in_and_out]: solph.Flow(variable_costs=self.current_vac[0])},
+            outputs={busses[self.bus_out]: solph.Flow(variable_costs=self.current_vac[1])},
+            inputs={busses[self.bus_in]: solph.Flow(variable_costs=self.current_vac[0])},
             initial_storage_level=self.storage_level / self.storage_capacity,
             nominal_storage_capacity=self.storage_capacity,
             min_storage_level=self.storage_level_min / self.storage_capacity,
@@ -131,8 +132,8 @@ class StorageH2 (Component):
         v_spec = 10
         for i in range(10):
             v_spec = (
-                    self.R * T / (p + (self.rk_a / (T**0.5*v_spec * (v_spec + self.rk_b))))
-                ) + self.rk_b
+                self.R * T / (p + (self.rk_a / (T**0.5 * v_spec * (v_spec + self.rk_b))))
+            ) + self.rk_b
 
         # Calculate the mass [kg].
         m = V * self.Mr / v_spec
@@ -152,8 +153,8 @@ class StorageH2 (Component):
         v_spec = 10
         for i in range(10):
             v_spec = (
-                    self.R * T / (p + (self.rk_a / (T**0.5*v_spec * (v_spec + self.rk_b))))
-                ) + self.rk_b
+                self.R * T / (p + (self.rk_a / (T**0.5 * v_spec * (v_spec + self.rk_b))))
+            ) + self.rk_b
 
         # Calculate the volume [m3]
         V = m * v_spec / self.Mr

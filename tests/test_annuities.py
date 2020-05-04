@@ -27,7 +27,7 @@ class TestAnnuities:
         self.component.life_time = 20
         self.component.capex = capex
         self.component.sim_params = sp(sim_params)
-        self.target = {'cost':10}
+        self.target = {'cost': 10}
 
     def test_calc_annuities(self):
         assert (round(calc_annuity(self.component, None)) == 0)
@@ -57,4 +57,5 @@ class TestAnnuities:
     def test_calc_annuities_emissions(self):
         assert calc_annual_emissions(self.component, None) == 0
         assert calc_annual_emissions(self.component, 0) == 0
-        assert calc_annual_emissions(self.component,self.target) == self.target['cost'] / self.component.life_time
+        assert calc_annual_emissions(
+            self.component, self.target) == self.target['cost'] / self.component.life_time

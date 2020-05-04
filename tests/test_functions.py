@@ -34,5 +34,3 @@ def test_get_sim_time_span():
     #  step_size: Size of one time step [min].
 
     assert get_sim_time_span(3, 15) == 3 * 15
-
-

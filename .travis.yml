@@ -30,6 +30,9 @@ script:
   # Run smooth example
   - MPLBACKEND=SVG python smooth/examples/run_smooth_example.py
 
+  # Run smooth example
+  - MPLBACKEND=SVG python smooth/examples/run_optimization_example_short.py
+
   # Build docs
   - pip install -r doc/requirements.txt
   - make -C doc html

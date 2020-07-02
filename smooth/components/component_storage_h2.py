@@ -23,11 +23,17 @@ class StorageH2 (Component):
         # Life time [a].
         self.life_time = 20
         # The initial storage level as a factor of the capacity [-]
-        self.initial_storage_factor = 0.5
+        self.initial_storage_factor = 1
+        # The cost of the initial bought hydrogen [EUR/kg]
+        self.bought_h2_cost_per_kg = 9.5
         # Max chargeable hydrogen in one time step in kg/h
         self.delta_max = None
         # The storage level wanted as a factor of the capacity
         self.slw_factor = None
+        # The final storage level at the end of the simulation
+        self.final_storage_level = None
+        # The total cost of the bought H2, only taking the remaining H2 into consideration
+        self.bought_h2_cost_total = None
 
         # ------------------- PARAMETERS (VARIABLE ARTIFICIAL COSTS - VAC) -------------------
         # Normal var. art. costs for charging (in) and discharging (out) the storage [EUR/kg].
@@ -42,6 +48,7 @@ class StorageH2 (Component):
         self.set_parameters(params)
         # Initial storage level [kg].
         self.storage_level_init = self.initial_storage_factor * self.storage_capacity
+
         # If a storage level is set as wanted, the vac_low costs apply if the
         # storage is below that level [kg].
         if self.slw_factor is not None:
@@ -125,6 +132,12 @@ class StorageH2 (Component):
                 # Get the storage pressure [bar].
                 self.pressure = self.get_pressure(self.storage_level)
                 self.states['pressure'][sim_params.i_interval] = self.pressure
+
+        if self.states['storage_level'][sim_params.n_intervals - 1] is not None:
+            self.final_storage_level = self.states['storage_level'][sim_params.n_intervals - 1]
+            # Total initial hydrogen cost to fill the storage to initial level [EUR]
+            self.bought_h2_cost_total = self.bought_h2_cost_per_kg \
+                                        * (self.storage_level_init - self.final_storage_level)
 
     def get_mass(self, p, V=None):
         # Calculate the mass of the storage at a certain pressure.

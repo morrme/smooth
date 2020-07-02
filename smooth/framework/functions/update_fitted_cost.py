@@ -143,8 +143,7 @@ def get_poly(component, fitting_dict, index, dependant_value):
     # Fitting values fv_1, fv_2, fv_3, ..... fv_n.
     # Function:
     #   fv_1 + fv_2*dependant_value + fv_3*dependant_value^2 + ... fv_n*dependant_value^(n-1)
-
-    # Get the fitting values.
+    # Get the fitting value, which is the current cost if "cost" is chosen.
     fv = fitting_dict['fitting_value'][index]
     # Get the number of fitting values [-].
     n_fv = len(fv)
@@ -152,6 +151,8 @@ def get_poly(component, fitting_dict, index, dependant_value):
     # In a loop, calculate the costs.
     cost = 0
     for i_fv in range(n_fv):
+        if fv[i_fv] == 'cost':
+            fv[i_fv] = fitting_dict['cost']
         cost += fv[i_fv] * dependant_value ** i_fv
 
     # Return the costs.
@@ -198,3 +199,5 @@ def get_dependant_value(component, fitting_dict, index, fixedCost):
         dependant_value = dependant_value['cost']
 
     return dependant_value
+
+
